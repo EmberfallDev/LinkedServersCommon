@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "org.example"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 repositories {
     mavenCentral()
@@ -23,5 +23,13 @@ tasks.test {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
     }
 }
