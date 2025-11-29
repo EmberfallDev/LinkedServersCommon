@@ -1,41 +1,61 @@
 package org.Sam.RedisChannelData;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.Sam.RedisChannelData.messages.StartupMessage;
+import org.Sam.RedisChannelData.messages.EmberMessages;
 
 public class Serial {
-
-    //serializer
-
 
     private static final ObjectMapper MAPPER = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     /**
-     * Serialize StartupMessage to JSON
-     * @param message the StartupMessage to serialize
-     * @return the JSON string representation of the StartupMessage
+     * Serialize any record to JSON with message type information
+     * @param record the record to serialize
+     * @return the JSON string representation of the record with type information
      */
-    public static String toStartupJson(StartupMessage message) {
+    public static String toJson(Record record) {
         try {
-            return MAPPER.writeValueAsString(message);
+            // Find the message type for this record
+            EmberMessages messageType = EmberMessages.fromRecord(record);
+            if (messageType == null) {
+                throw new IllegalArgumentException("Unknown record type: " + record.getClass());
+            }
+
+            // Create a wrapper object with type information
+            MessageWrapper wrapper = new MessageWrapper(messageType.name(), record);
+            return MAPPER.writeValueAsString(wrapper);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to serialize StartupMessage to JSON", e);
+            throw new RuntimeException("Failed to serialize record to JSON", e);
         }
     }
 
     /**
-     * Deserialize JSON to StartupMessage
-     * @param json the JSON string representation of the StartupMessage
-     * @return the deserialized StartupMessage
+     * Deserialize JSON to the correct record type automatically
+     * @param json the JSON string representation of the message
+     * @return the deserialized record of the correct type
      */
-    public static StartupMessage fromStartupJson(String json) {
+    public static Record fromJson(String json) {
         try {
-            return MAPPER.readValue(json, StartupMessage.class);
+            JsonNode jsonNode = MAPPER.readTree(json);
+
+            // Get the message type
+            String messageTypeName = jsonNode.get("messageType").asText();
+            EmberMessages messageType = EmberMessages.valueOf(messageTypeName);
+
+            // Get the actual message data
+            JsonNode messageData = jsonNode.get("data");
+
+            // Deserialize to the correct record type
+            return (Record) MAPPER.treeToValue(messageData, messageType.getRecordClass());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to deserialize JSON to StartupMessage", e);
+            throw new RuntimeException("Failed to deserialize JSON to record", e);
         }
     }
 
+    /**
+     * Helper wrapper class for JSON structure with type information
+     */
+    private record MessageWrapper(String messageType, Record data) {}
 }

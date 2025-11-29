@@ -19,9 +19,22 @@ public enum EmberMessages {
     public Class<? extends Record> getRecordClass() {
         return recordClass;
     }
-    
-    // Helper method to check if a record matches this message type
+
     public boolean isOfType(Record record) {
         return recordClass != null && recordClass.isInstance(record);
+    }
+
+    /**
+     * Find the EmberMessage type for a given record instance
+     * @param record the record to find the message type for
+     * @return the corresponding EmberMessages enum value, or null if not found
+     */
+    public static EmberMessages fromRecord(Record record) {
+        for (EmberMessages msg : EmberMessages.values()) {
+            if (msg.isOfType(record)) {
+                return msg;
+            }
+        }
+        return null;
     }
 }
