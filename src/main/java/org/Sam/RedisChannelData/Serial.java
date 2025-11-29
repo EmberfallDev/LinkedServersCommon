@@ -3,7 +3,6 @@ package org.Sam.RedisChannelData;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.Sam.RedisChannelData.messages.EmberMessages;
 
 public class Serial {
 
