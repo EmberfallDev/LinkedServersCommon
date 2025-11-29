@@ -5,5 +5,5 @@ import org.Sam.ServerStates;
 import java.util.List;
 import java.util.UUID;
 
-public record SubServerMessage(ServerStates serverState, List<UUID> currentPlayers) {
+public record SubUpdateMessage(ServerStates serverState, List<UUID> currentPlayers) {
 }
